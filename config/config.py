@@ -26,3 +26,6 @@ admin_email_passwd = 'yagrayagra'
 email_subject = 'confirm email from yagra'
 email_info = "Welcome, please clink <a href='%s'>here</a> to confirm registration"
 
+
+session_dir = os.environ['DOCUMENT_ROOT'] + '/session'
+session_expires_interval = 30 # seconds

@@ -7,6 +7,7 @@ import sys
 
 from backend.signin import SignInHelper
 from config import config
+from utility.session import Session
 from utility.render_template import print_headers
 from utility.render_template import render_template
 from utility.render_template import render_inform
@@ -30,11 +31,16 @@ class SignIn():
             try:
                 name = form.getvalue(SignIn.NAME_FIELD)
                 passwd = form.getvalue(SignIn.PASSWD_FIELD)
-                result, session, avatar_url = SignInHelper.check_valid(name, 
+                result, id, avatar_url = SignInHelper.check_valid(name, 
                                                                        passwd)
                 if result:
+
+                    sess = Session(cookie_path='/')
+                    sess.data['id'] = id 
                     headers = {}
-                    headers['Set-Cookie'] = 'sid=%s;' % session.cookie['sid'].value
+                    headers['Set-Cookie'] = 'sid=%s;' % sess.cookie['sid'].value
+                    sess.set_expires(config.session_expires_interval)
+                    sess.close()
                     print_headers(headers)
                     avatar_url = os.path.sep.join([config.avatar_request_path, 
                                                    avatar_url

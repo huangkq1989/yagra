@@ -4,6 +4,7 @@ import cgi
 import cgitb
 import os
 import hashlib
+import time
 
 from config import config
 from utility.session import Session
@@ -51,17 +52,15 @@ class Upload(object):
         return avatar_dir
 
     def _upload_handler(self):
-        sess = Session(expires=10*60, cookie_path='/')
+        sess = Session(cookie_path='/')
         id = sess.data.get('id')
-        if not id:
-            return render_template("confirm.html", 
-                                   info='please login!')
+        if (not id) or sess.is_expired(config.session_expires_interval):
+            return render_inform("Upload Failed", info='please login first!')
 
         form = cgi.FieldStorage()
         fileitem = form['filename']
         if not fileitem.filename:
-            return render_template("confirm.html", 
-                                   info='invalid file name!')
+            return render_inform("Upload Failed", info='invalid file name!')
 
         self._upload_file_name = fileitem.filename
         if self._validate_file_name():
@@ -69,7 +68,7 @@ class Upload(object):
             path = self._make_storage_dir(id)
 
             full_name = path + self._safe_file_name
-            with open(full_name, 'wb') as fp:
+            with open(full_name, 'wb+') as fp:
                 fp.write(fileitem.file.read())
 
             avatar_url_in_db = os.path.sep.join([self._sub_storage_dir, 
@@ -80,13 +79,18 @@ class Upload(object):
             avatar_url = os.path.sep.join([config.avatar_request_path, 
                                            avatar_url_in_db
                                            ]) 
-            return render_template("main.html", img=avatar_url)
+            return render_template("main.html", 
+                                   img=avatar_url+'?'+str(time.time()))
         else:
-            return render_template("main.html", img=config.default_avatar_url)
+            ERROR_STR = ("Invalid type of avatar, only %s format support." % 
+                         str(Upload.VALIDE_EXTENSION)
+                         )
+            return render_inform("Upload Failed", ERROR_STR)
 
     def upload(self):
+        self._upload_handler()
         try:
-            self._upload_handler()
+            pass
         except Exception as err:
             render_inform("Wrong Happened", 'Please try it Again')
 
