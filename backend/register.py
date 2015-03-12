@@ -5,7 +5,7 @@ import hashlib
 import binascii
 import os
 
-#import mysql_python
+from backend.mysql_helper import get_db_cursor
 
 
 class RegisterHelper(object):
@@ -15,21 +15,33 @@ class RegisterHelper(object):
 
     @staticmethod
     def validate_email(email):
-        #TODO
-        return True
+        with get_db_cursor() as cursor:
+            SQL = "select 1 from users where email=%s"
+            cursor.execute(SQL, (email, ))
+            if cursor.fetchone():
+                return False
+            return True
 
     @staticmethod
     def validate_name(name):
-        #TODO
-        return True
+        with get_db_cursor() as cursor:
+            SQL = "select 1 from users where username=%s"
+            cursor.execute(SQL, (name, ))
+            if cursor.fetchone():
+                return False
+            return True
 
     @staticmethod
     def store_to_database(email, name, password):
         salt = os.urandom(32)
-        #hashlib.md5(password+slat)
-        #TODO new in 2.7.8
-        dk = hashlib.pbkdf2_hmac('sha256', b'password', b'salt', 100000)
-        #print len(binascii.hexlify(os.urandom(32)))
+        #TODO new in 2.7.8, need more compatibility
+        dk = hashlib.pbkdf2_hmac('sha256', bytearray(password), 
+                                 bytearray(salt), 100000)
+        with get_db_cursor() as cursor:
+            SQL = "insert users(username, email, password, salt, register_on) \
+                   values(%s, %s, %s, %s, NOW());"
+
+            cursor.execute(SQL, (name, email, dk, salt,))
 
     @staticmethod
     def send_confirm_email(email):
@@ -43,4 +55,4 @@ class RegisterHelper(object):
 
 
 if __name__=='__main__':
-    RegisterHelper.store_to_database('sha256', '', 'password')
+    RegisterHelper.validate_email('admin@scn.cn')
