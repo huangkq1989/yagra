@@ -6,6 +6,17 @@ import binascii
 import os
 
 from backend.mysql_helper import get_db_cursor
+from config import config
+from utility.confirm_url_serializer import ConfirmURLSerializer
+from utility.utility import send_mail
+
+
+class AlreadyConfirmError(Exception):
+    pass
+
+
+class FakeConfirmURLError(Exception):
+    pass
 
 
 class RegisterHelper(object):
@@ -45,14 +56,41 @@ class RegisterHelper(object):
 
     @staticmethod
     def send_confirm_email(email):
-        #TODO
-        pass
+        serializer = ConfirmURLSerializer(config.secret_key_for_confirm_link)
+        token = serializer.dumps(email, salt=config.salt_for_confirm_link)
+        email_info = config.email_info % token
+        send_mail(config.admin_email,
+                  config.admin_email_passwd,
+                  email,
+                  config.email_subject,
+                  email_info 
+                  )
+
+    @staticmethod
+    def update_confirmed_label(email):
+        with get_db_cursor() as cursor:
+            SQL = "update users set confirmed=1 where email=%s"
+            cursor.execute(SQL, (email, ))
 
     @staticmethod
     def confirm_email(token):
-        #TODO
-        return True
-
-
-if __name__=='__main__':
-    RegisterHelper.validate_email('admin@scn.cn')
+        serializer = ConfirmURLSerializer(config.secret_key_for_confirm_link)
+        email = serializer.loads(token,
+                                 salt=config.salt_for_confirm_link,
+                                 max_age=3600)
+        if email:
+            with get_db_cursor() as cursor:
+                SQL = "select confirmed from users where email=%s"
+                cursor.execute(SQL, (email, ))
+                result = cursor.fetchone()
+                if result:
+                    confirmed = result[0]
+                    if confirmed:
+                        raise AlreadyConfirmError()
+                    else:
+                        RegisterHelper.update_confirmed_label(email)
+                        return True
+                else:
+                    raise FakeConfirmURLError()
+        else:
+            raise FakeConfirmURLError()

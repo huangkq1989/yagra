@@ -5,10 +5,11 @@ import cgitb
 import os
 import json
 
+from backend.register import AlreadyConfirmError
 from backend.register import RegisterHelper
-from utility.check_field import check_field
+from backend.register import FakeConfirmURLError
+from utility.jsonify import FormValidateResult
 from utility.jsonify import jsonify
-from utility.json_result import FormValidateResult
 from utility.render_template import render_template
 from utility.render_template import render_inform
 
@@ -74,10 +75,14 @@ def confirm_email():
         return render_inform('Error', 'invalid confirm link')
     else:
         url = form.getvalue(URL)
-        if RegisterHelper.confirm_email(url):
-            return render_template("main.html")
-        else:
-            return render_inform('Error', 'invalid confirm link')
+        try:
+            if RegisterHelper.confirm_email(url):
+                return render_template("signin.html", info='Confirm success, please signin:)' )
+        except AlreadyConfirmError as err:
+            return render_inform('Error', 'Already confirmed')
+        except FakeConfirmURLError as err:
+            return render_inform('Error', 'Invalid confirm link')
+
 
 
 def route():

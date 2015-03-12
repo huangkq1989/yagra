@@ -14,11 +14,11 @@ $(document).ready(function() {
                     stringLength: {
                         min: 6,
                         max: 30,
-                        message: 'The username must be more than 6 and less than 30 characters long'
+                        message: 'Must be more than 6 and less than 30 characters'
                     },
                     regexp: {
                         regexp: /^[a-zA-Z0-9_]+$/,
-                        message: 'The username can only consist of alphabetical, number and underscore'
+                        message: 'Alphabetical, number and underscore only'
                     }
                 }                                                                       
             },                                                                        

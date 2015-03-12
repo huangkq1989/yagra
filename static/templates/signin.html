@@ -12,7 +12,7 @@
         <link href="http://apps.bdimg.com/libs/bootstrap/3.3.0/css/bootstrap-theme.min.css" rel="stylesheet">
         <link href="http://apps.bdimg.com/libs/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet">
 
-        <link href="../css/signin.css" rel="stylesheet">
+        <link href="/yagra/static/css/signin.css" rel="stylesheet">
 
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
@@ -23,6 +23,7 @@
     <body>
         <div class="container">
             <form id="signin_form" class="form-signin"  action="/yagra/signin.py" data-toggle="validator" method="post">
+                <span class='alert alert-success'>{info}</span>
                 <h2 class="form-signin-heading">Yagra</h2>
                 <div class="form-group">
                     <input type="text" name='name' class="form-control" placeholder="username" required autofocus>
@@ -34,12 +35,13 @@
                 <div class="href-register">
                     <a href="register.html" >Create an Account</a>
                 </div>
+
             </form>
         </div> <!-- /container -->
         <script src="http://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
         <script src="http://apps.bdimg.com/libs/bootstrap/3.3.0/js/bootstrap.min.js"></script>
-        <script src="../static/js/dependency/formValidation.min.js"></script>
-        <script src="../static/js/dependency/framework/bootstrap.min.js"></script>  
-        <script src="../static/js/register_form_validate.js"></script>
+        <script src="/yagra/static/js/dependency/formValidation.min.js"></script>
+        <script src="/yagra/static/js/dependency/framework/bootstrap.min.js"></script>  
+        <script src="/yagra/static/js/signin_form_validate.js"></script>
     </body>
 </html>
