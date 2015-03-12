@@ -54,4 +54,10 @@ docs/_build/
 target/
 
 # swap
-.sw[op]
+*.sw[op]
+index.html
+test.py
+avatar
+yagra.js
+.htaccess
+session
