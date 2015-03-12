@@ -8,8 +8,6 @@ import json
 from backend.register import RegisterHelper
 from utility.check_field import check_field
 from utility.jsonify import jsonify
-from utility.json_result import JsonResult
-from utility.json_result import ErrorJsonResult
 from utility.json_result import FormValidateResult
 from utility.render_template import render_template
 from utility.render_template import render_inform

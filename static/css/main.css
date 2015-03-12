@@ -21,11 +21,6 @@ body {
     border-radius: 50%;
 }
 
-.img {
-    width: 100px;
-    margin: 0px auto;
-}
-
 .upload-form {
     max-width: 335px;
     margin: 0px auto;
