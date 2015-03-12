@@ -7,7 +7,6 @@ import sys
 
 from backend.signin import SignInHelper
 from config import config
-from utility.jsonify import jsonify
 from utility.render_template import print_headers
 from utility.render_template import render_template
 from utility.render_template import render_inform
@@ -31,20 +30,20 @@ class SignIn():
             try:
                 name = form.getvalue(SignIn.NAME_FIELD)
                 passwd = form.getvalue(SignIn.PASSWD_FIELD)
-                result, session = SignInHelper.check_valid(name, passwd)
+                result, session, avatar_url = SignInHelper.check_valid(name, 
+                                                                       passwd)
                 if result:
                     headers = {}
                     headers['Set-Cookie'] = 'sid=%s;' % session.cookie['sid'].value
                     print_headers(headers)
-                    return render_template("main.html", 
-                                           img=config.default_avatar_url)
+                    avatar_url = os.path.sep.join([config.avatar_request_path, 
+                                                   avatar_url
+                                                   ]) 
+                    return render_template("main.html", img=avatar_url)
                 else:
                     return render_inform("Wrong", 'password or username is wrong')
             except Exception as err:
                 return render_inform("Wrong Happened", 'Please try it Again')
-
-
-            return jsonify(ErrorJsonResult("password or username is wrong"))
 
 
 signin = SignIn()
