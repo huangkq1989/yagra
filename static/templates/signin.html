@@ -22,8 +22,11 @@
     </head>
     <body>
         <div class="container">
-            <form id="signin_form" class="form-signin"  action="/yagra/signin.py" data-toggle="validator" method="post">
-                <span class='alert alert-success'>{info}</span>
+            <form id="signin_form" class="form-signin"  action="/yagra/app.py/signin" data-toggle="validator" method="post">
+                <div class="alert alert-{alert_type}" role="alert">
+                    <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                    {info}
+                </div>
                 <h2 class="form-signin-heading">Yagra</h2>
                 <div class="form-group">
                     <input type="text" name='name' class="form-control" placeholder="username" required autofocus>
@@ -33,7 +36,7 @@
                 </div>
                 <button class="btn btn-lg btn-primary btn-block" type="submit">Signin</button>
                 <div class="href-register">
-                    <a href="register.html" >Create an Account</a>
+                    <a href="/yagra/static/templates/register.html" >Create an Account</a>
                 </div>
 
             </form>

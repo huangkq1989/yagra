@@ -16,9 +16,9 @@ $(document).ready(function() {
                     },
                     remote: {
                         message: 'Email exists',
-                        url: '/yagra/register.py/check_email', 
+                        url: '/yagra/app.py/check_email', 
                         type: 'POST', 
-                        delay: 2000,
+                        delay: 500,
                     }
                 }
             },
@@ -38,7 +38,7 @@ $(document).ready(function() {
                     },
                    remote: {
                         message: 'name exists',
-                        url: '/yagra/register.py/check_name', 
+                        url: '/yagra/app.py/check_name', 
                         type: 'POST', 
                         delay: 2000,
                     }
