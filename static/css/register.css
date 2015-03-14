@@ -3,7 +3,6 @@ body {
   padding-bottom: 40px;
   background-color: #eee;
 }
-
 .form-register {
   max-width: 330px;
   padding: 15px;
@@ -28,22 +27,12 @@ body {
 .form-register .form-control:focus {
   z-index: 2;
 }
-.form-register input[type="email"] {
-  margin-bottom: -1px;
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
-}
-.form-register input[type="text"] {
-  margin-bottom: -1px;
-  border-radius: 0;
-}
-.form-register input[type="password"] {
-  margin-bottom: 10px;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+.form-register input {
+  margin-bottom: 0px;
 }
 .href-signin{
   margin-top: 10px;
+  margin-bottom: 30px;
   text-align: center;
   font-size: 18px;
 }
