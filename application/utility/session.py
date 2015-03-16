@@ -22,7 +22,9 @@ class Session(object):
             self.cookie.clear()
         else:
             self.cookie.clear()
-            sid = hashlib.md5(repr(time.time())).hexdigest()
+            sid = hashlib.md5(repr(time.time()) +
+                              config.session_salt
+                              ).hexdigest()
         self.cookie['sid'] = sid
 
         if cookie_path:
@@ -76,19 +78,3 @@ class Session(object):
 
     def _gen_session_file_name(self, sid):
         return config.session_dir + '/sess_' + sid
-
-
-class SessionCleaner(object):
-    """Use to remove session file in case of client
-    exits session undeservedly.
-    """
-    def __init__(self):
-        self._run_interval = 60 * 60 * 5
-
-    def loop(self):
-        pass
-
-
-if __name__ == '__main__':
-    cleaner = SessionCleaner()
-    cleaner.loop()

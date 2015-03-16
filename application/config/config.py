@@ -2,6 +2,11 @@
 
 import os
 
+db_host = "localhost"
+db_port = 3306
+db_user = 'root'
+db_passwd = 'root'
+db_name = 'yagra'
 
 top_request_uri = '/yagra'
 index_request_uri = "/".join([top_request_uri, 'app.py', '/'])
@@ -38,6 +43,7 @@ email_info = ("<html><body>Welcome, please clink <a href='http://" +
 
 session_dir = os.environ['DOCUMENT_ROOT'] + '/session'
 session_expires_interval = 30  # seconds
+session_salt = 'ADFMDsad33dl'
 
 
 do_verbose_err_log = True

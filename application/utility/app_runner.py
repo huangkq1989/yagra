@@ -1,8 +1,9 @@
 # --*--coding:utf8--*--
 
 import cgitb
-import os
 import functools
+import os
+import sys
 
 from application.config import config
 from application.utility.render_template import redirect
@@ -45,4 +46,9 @@ class AppRunner(object):
         except Exception as err:
             cgi_error_logging(err.message)
             if not self.debug:
-                return render_inform("Error : (", "Sorry, please try it again.")
+                return render_inform("Error : (",
+                                     "Sorry, please try it again.")
+            else:
+                # cgitb will handle it.
+                (exc, exc_type, tb) = sys.exc_info()
+                raise err, None, tb

@@ -6,6 +6,7 @@ import os
 from application.backend.mysql_helper import get_db_cursor
 from application.config import config
 from application.utility.confirm_url_serializer import ConfirmURLSerializer
+from application.utility.utility import pbkdf2_hmac
 from application.utility.utility import send_mail
 
 
@@ -43,9 +44,7 @@ class RegisterHelper(object):
     @staticmethod
     def store_to_database(email, name, password):
         salt = os.urandom(32)
-        # TODO new in 2.7.8, need more compatibility
-        dk = hashlib.pbkdf2_hmac('sha256', bytearray(password),
-                                 bytearray(salt), 100000)
+        dk = pbkdf2_hmac(hashlib.sha256, password, salt, 100000)
         with get_db_cursor() as cursor:
             SQL = "insert users(username, email, password, salt, register_on) \
                    values(%s, %s, %s, %s, NOW());"

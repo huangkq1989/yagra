@@ -4,6 +4,7 @@ import hashlib
 
 from application.backend.mysql_helper import get_db_cursor
 from application.utility.utility import constant_time_compare
+from application.utility.utility import pbkdf2_hmac
 
 
 class SigninHelper(object):
@@ -20,9 +21,7 @@ class SigninHelper(object):
             result = cursor.fetchone()
             if result:
                 id, password, salt, avatar_url, confirmed = result
-                dk = hashlib.pbkdf2_hmac('sha256', bytearray(plain_password),
-                                         bytearray(salt), 100000)
-                # TODO confirme issue
+                dk = pbkdf2_hmac(hashlib.sha256, plain_password, salt, 100000)
                 if (constant_time_compare(dk, password) and confirmed):
                     return True, id, avatar_url
             return False, None, None

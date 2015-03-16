@@ -10,8 +10,8 @@ from application.utility.app_runner import AppRunner
 from application.utility.render_template import render_index
 
 
-app = AppRunner(debug=False)
-# app = AppRunner(debug=True)
+#app = AppRunner(debug=False)
+app = AppRunner(debug=True)
 
 
 @app.route("/")
