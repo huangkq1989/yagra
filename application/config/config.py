@@ -42,7 +42,7 @@ email_info = ("<html><body>Welcome, please clink <a href='http://" +
 
 
 session_dir = os.environ['DOCUMENT_ROOT'] + '/session'
-session_expires_interval = 30  # seconds
+session_expires_interval = 60 * 15  # seconds
 session_salt = 'ADFMDsad33dl'
 
 
