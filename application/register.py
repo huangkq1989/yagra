@@ -15,12 +15,12 @@ from application.utility.render_template import render_inform
 def check_field(field_name):
     def decoder(is_valid_field):
         @functools.wraps(is_valid_field)
-        def _check_field(self):
+        def _check_field(instance):
             form = cgi.FieldStorage()
             field_value = form.getvalue(field_name)
             if field_name not in form:
                 return jsonify(FormValidateResult(False))
-            elif is_valid_field(self, field_value):
+            elif is_valid_field(instance, field_value):
                 return jsonify(FormValidateResult(True))
             else:
                 return jsonify(FormValidateResult(False))

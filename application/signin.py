@@ -38,8 +38,10 @@ class Signin():
                                                    avatar_url
                                                    ])
                 INFO_STR = "Support %s format." % str(config.VALIDE_EXTENSION)
-                return render_template("main.html", img=avatar_url,
-                                       alert_type="info", info=INFO_STR)
+                return render_template("main.html",
+                                       user=cgi.escape(name, quote=True),
+                                       img=avatar_url, alert_type="info",
+                                       info=INFO_STR)
             else:
                 return render_index('danger', 'password or username is wrong')
 

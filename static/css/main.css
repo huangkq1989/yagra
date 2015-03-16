@@ -33,6 +33,15 @@ body {
     margin-bottom: 60px;
 }
 
+.exit {
+    padding: 1px 5px; 
+    margin-top: -2px;
+}
+.user {
+    color: white;
+    font-size:16px;
+}
+
 .footer {
     position: absolute;
     bottom: 0;

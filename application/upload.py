@@ -6,9 +6,18 @@ import time
 
 from application.config import config
 from application.utility.session import Session
+from application.utility.jsonify import jsonify
+from application.utility.json_result import JsonResult
+from application.utility.json_result import ErrorJsonResult
 from application.utility.render_template import render_template
-from application.utility.render_template import render_inform
+from application.utility.utility import cgi_error_logging
 from application.backend.avatar import AvatarHelper
+
+
+SESSION_IS_INVALID = "Please signin first."
+INVALID_FILE_NAME = "Invalid file name"
+INVALID_FILE_NAME_EXTENSION = "Invalid file name extension"
+TEMP_ERROR = "Sorry, wrong happened, please try it again."
 
 
 class Upload(object):
@@ -31,7 +40,7 @@ class Upload(object):
 
     def _make_storage_dir(self, id):
         # Replace the original filename to avoid unsafe symbol
-        safe_file_name_str = "%09d.%s" % (id, self._extension)
+        safe_file_name_str = "%010d.%s" % (id, self._extension)
         self._safe_file_name = safe_file_name_str[6:]
         sub_storage_dir = [safe_file_name_str[0:3],
                            safe_file_name_str[3:6],
@@ -53,12 +62,12 @@ class Upload(object):
         sess = Session(cookie_path='/')
         id = sess.data.get('id')
         if (not id) or sess.is_expired(config.session_expires_interval):
-            return render_inform("Upload Failed", info='please login first!')
+            return jsonify(ErrorJsonResult(SESSION_IS_INVALID))
 
         form = cgi.FieldStorage()
         fileitem = form['filename']
         if not fileitem.filename:
-            return render_inform("Upload Failed", info='invalid file name!')
+            return jsonify(ErrorJsonResult(INVALID_FILE_NAME))
 
         self._upload_file_name = fileitem.filename
         if self._validate_file_name():
@@ -78,18 +87,23 @@ class Upload(object):
                                            avatar_url_in_db
                                            ])
             INFO_STR = "Upload success."
-            return render_template("main.html",
-                                   img=avatar_url+'?'+str(time.time()),
-                                   alert_type="info", info=INFO_STR
-                                   )
+            result = {'img': avatar_url+'?'+str(time.time()),
+                      'alert_type': "info", 
+                      'info':INFO_STR,
+                      }
+            return jsonify(JsonResult(result))
         else:
-            ERROR_STR = ("Invalid type of avatar, only %s format support." %
-                         str(Upload.VALIDE_EXTENSION)
+            ERROR_STR = ("Invalid type of avatar<br> only support %s." %
+                         str(config.VALIDE_EXTENSION)
                          )
-            return render_inform("Upload Failed", ERROR_STR)
+            return jsonify(ErrorJsonResult(ERROR_STR))
 
     def upload(self):
-        self._upload_handler()
+        try:
+            self._upload_handler()
+        except Exception as err:
+            cgi_error_logging(err.message)
+            return jsonify(ErrorJsonResult(TEMP_ERROR))
 
 
 if __name__ == '__main__':
