@@ -13,7 +13,7 @@ class SessionGC(object):
     """
 
     def __init__(self, session_dir):
-        self._run_interval = 6
+        self._run_interval_seconds = 60
         self._session_dir = session_dir
 
     def do_gc(self):
@@ -35,7 +35,7 @@ class SessionGC(object):
             while True:
                 logging.debug('start going to check')
                 self.do_gc()
-                time.sleep(self._run_interval)
+                time.sleep(self._run_interval_seconds)
         except Exception as err:
             logging.error("Error happens:%s", err)
 

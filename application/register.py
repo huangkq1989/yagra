@@ -6,7 +6,7 @@ import functools
 from application.backend.register import AlreadyConfirmError
 from application.backend.register import RegisterHelper
 from application.backend.register import FakeConfirmURLError
-from application.utility.jsonify import FormValidateResult
+from application.utility.json_result import  FormValidateResult
 from application.utility.jsonify import jsonify
 from application.utility.render_template import render_index
 from application.utility.render_template import render_inform
@@ -73,6 +73,7 @@ class Register(object):
                     return render_index('info',
                                         'Confirm success, please signin. :)')
             except AlreadyConfirmError:
-                return render_inform('Error', 'Already confirmed')
+                return render_index('info',
+                                    'Already Confirmed, please signin. :)')
             except FakeConfirmURLError:
                 return render_inform('Error', 'Invalid confirm link')

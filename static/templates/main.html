@@ -28,12 +28,13 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#">Yagra</a>
+                <span class="navbar-brand">Yagra, &nbsp;&nbsp;{user}</span>
             </div>
-            <div class="navbar-collapse collapse" style="margin-top:15px">
-                <span class="pull-left user">{user}</span>
-                <a class="btn btn-xs btn-danger pull-right exit" href="/yagra/app.py/signout">退出</a>
-            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/yagra/app.py/signout">退出</a></li>
+                </ul>
+            </div>  
         </div>
         </nav>
 
