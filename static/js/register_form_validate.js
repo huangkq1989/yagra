@@ -29,14 +29,14 @@ $(document).ready(function() {
                     },                                                                      
                     stringLength: {
                         min: 6,
-                        max: 30,
+                        max: 20,
                         message: 'Must be more than 6 and less than 20 characters'
                     },
                     regexp: {
                         regexp: /^[a-zA-Z0-9_]+$/,
                         message: 'Alphabetical, number and underscore only'
                     },
-                   remote: {
+                    remote: {
                         message: 'name exists',
                         url: '/yagra/app.py/check_name', 
                         type: 'POST', 
@@ -49,10 +49,28 @@ $(document).ready(function() {
                     notEmpty: {                                                           
                         message: 'The password is required and cannot be empty'             
                     },                                                                    
+                    callback: {
+                        message: 'At least three types of num, lower alphabetical, upper alphabetical and @#$%^&*+=',
+                        callback: function(password, validator) {
+                            var validCount = 0;
+                            var patternStrArray = new Array();
+                            patternStrArray.push("^(?=.*[0-9]).{1,}$"); 
+                            patternStrArray.push("^(?=.*[a-z]).{1,}$"); 
+                            patternStrArray.push("^(?=.*[A-Z]).{1,}$");
+                            patternStrArray.push("^(?=.*[@#$%^&\*+=]).{1,}$");
+                            for(var idx in patternStrArray) {
+                                var patt = new RegExp(patternStrArray[idx]);
+                                if(patt.test(password)){
+                                    validCount++;
+                                }
+                            }
+                            return validCount >= 3 ? true : false;
+                        }
+                    },
                     stringLength: {
                         min: 6,
-                        max: 30,
-                        message: 'Must be more than 6 and less than 20 characters'
+                        max: 13,
+                        message: 'Must be 6-13 characters'
                     },
                 }                                                                       
             },                                                                        
