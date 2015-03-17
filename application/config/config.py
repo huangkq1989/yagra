@@ -8,7 +8,7 @@ db_user = 'root'
 db_passwd = 'root'
 db_name = 'yagra'
 
-top_request_uri = '/yagra'
+top_request_uri = os.environ['REQUEST_ROOT'] 
 index_request_uri = "/".join([top_request_uri, 'app.py', '/'])
 
 

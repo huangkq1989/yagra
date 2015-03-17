@@ -22,7 +22,9 @@ class Signin():
         form = cgi.FieldStorage()
         if (Signin.NAME_FIELD not in form or
                 Signin.PASSWD_FIELD not in form):
-            return render_inform("Error request", 'Error request')
+            # return render_inform("Error request", 'Error request')
+            return render_index('info',
+                                'Confirm success, please signin. :)')
         else:
             name = form.getvalue(Signin.NAME_FIELD)
             passwd = form.getvalue(Signin.PASSWD_FIELD)

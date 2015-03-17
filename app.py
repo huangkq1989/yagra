@@ -1,6 +1,19 @@
 #!/usr/local/bin/python2.7
 # --*--coding:utf8--*--
 
+import os
+
+def init_request_root():
+    request_uri = os.environ['REQUEST_URI']
+    base_name = os.path.basename(__file__)
+    request_root = request_uri.split(base_name)[0] 
+    request_root = request_root if request_root != '/' else ''
+    os.environ['REQUEST_ROOT'] = request_root
+
+
+init_request_root()
+
+
 from application.avatar import VisteAvatar
 from application.register import Register
 from application.signin import Signin

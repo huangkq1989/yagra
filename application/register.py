@@ -10,6 +10,7 @@ from application.utility.json_result import  FormValidateResult
 from application.utility.jsonify import jsonify
 from application.utility.render_template import render_index
 from application.utility.render_template import render_inform
+from application.utility.render_template import render_template
 
 
 def check_field(field_name):
@@ -48,7 +49,8 @@ class Register(object):
         if (EMAIL_FIELD not in form or
                 NAME_FIELD not in form or
                 PASSWD_FIELD not in form):
-            return render_inform("Error request", 'Error request')
+            return render_template('register.html')
+            # return render_inform("Error request", 'Error request')
         else:
             email = form.getvalue(EMAIL_FIELD)
             name = form.getvalue(NAME_FIELD)

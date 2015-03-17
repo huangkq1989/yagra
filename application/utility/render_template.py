@@ -15,20 +15,62 @@ def redirect(url):
     print
 
 
+def get_extends_pattern():
+    return re.compile('{%\s*extends\s+(.*?)\s*%}')
+
+
+def get_block_pattern():
+    return re.compile("""{%\s*block\s+(.*?)\s*%}
+                         (.*?)
+                         {%\s*endblock\s*%}
+                      """, re.MULTILINE | re.VERBOSE | re.DOTALL)
+
+
+def form_block_pattern(block_name):
+    p = (r"""{%\s*block\s+""" + block_name +
+         """\s*%}(.*?){%\s*endblock\s*%}""")
+    return re.compile(p, re.MULTILINE | re.DOTALL)
+
+
+def get_html_file(file_name):
+    return os.path.sep.join([os.environ['DOCUMENT_ROOT'],
+                             'static/templates',
+                             file_name
+                             ])
+
+
 def render_template(file_name, **kwargs):
     print "Content-type: text/html"
     print
-    file_path = os.path.sep.join([os.environ['DOCUMENT_ROOT'],
-                                  'static/templates',
-                                  file_name
-                                  ])
+    file_path = get_html_file(file_name)
+    with open(file_path) as fp:
+        first_line = fp.readline()
+    match = get_extends_pattern().search(first_line)
+
+    template = None
+    if match:
+        template_name = match.group(1).strip()
+        template_name = get_html_file(template_name)
+        with open(template_name) as fp:
+            template = fp.read()
+
     with open(file_path) as fp:
         data = fp.read()
-    if kwargs:
-        for k, v in kwargs.iteritems():
-            p = re.compile('{' + k + '}')
-            data = p.sub(kwargs[k], data)
-    print data
+        for match in get_block_pattern().finditer(data):
+            if template:
+                template = re.sub(form_block_pattern(match.group(1)),
+                                  match.group(2), template)
+            else:
+                template = data
+
+    if not kwargs:
+        kwargs = {}
+    kwargs['request_root'] = os.environ['REQUEST_ROOT']
+    for k, v in kwargs.iteritems():
+        p = re.compile('{' + k + '}')
+        template = p.sub(kwargs[k], template)
+
+    print template
 
 
 def render_inform(header, info):
