@@ -4,6 +4,9 @@ import cgi
 import os
 
 from application.backend.signin import SigninHelper
+from application.backend.signin import TryTooMuchError
+from application.backend.signin import NeedConfirmException
+from application.backend.signin import ValidUserError
 from application.config import config
 from application.utility.session import Session
 from application.utility.render_template import render_template
@@ -23,9 +26,9 @@ class Signin():
         else:
             name = form.getvalue(Signin.NAME_FIELD)
             passwd = form.getvalue(Signin.PASSWD_FIELD)
-            result, id, avatar_url = SigninHelper.check_valid(name,
-                                                              passwd)
-            if result:
+
+            try:
+                id, avatar_url = SigninHelper.check_valid(name, passwd)
                 sess = Session(cookie_path='/')
                 sess.data['id'] = id
                 sess.set_expires(config.session_expires_interval)
@@ -42,8 +45,20 @@ class Signin():
                                        user=cgi.escape(name, quote=True),
                                        img=avatar_url, alert_type="info",
                                        info=INFO_STR)
-            else:
-                return render_index('danger', 'password or username is wrong')
+            except TryTooMuchError:
+                return render_index('danger', 'You have tried too much!')
+            except ValidUserError as err:
+                ERROR_TIP = 'Password or username is wrong'
+                if 0 < err.allowance:
+                    ERROR_TIP = ERROR_TIP + ",   %s chances left to try"
+                    ERROR_TIP = ERROR_TIP % err.allowance
+                elif 0 == err.allowance:
+                    ERROR_TIP = ERROR_TIP + ",  please try it after %s minutes"
+                    ERROR_TIP = ERROR_TIP % (
+                        SigninHelper.FORBIDDEN_INERVAL / 60)
+                return render_index('danger', ERROR_TIP)
+            except NeedConfirmException:
+                return render_index('danger', 'Please confirm first')
 
 
 if __name__ == '__main__':

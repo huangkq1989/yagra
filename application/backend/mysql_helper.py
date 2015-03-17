@@ -18,10 +18,14 @@ def get_db_cursor():
         db=config.db_name,
         )
     try:
-        yield connect.cursor()
+        cursor = connect.cursor()
+        yield cursor
     except Exception as err:
         (exc, exc_type, tb) = sys.exc_info()
         raise err, None, tb
         connect.rollback()
     else:
         connect.commit()
+    finally:
+        cursor.close()
+        connect.close()
