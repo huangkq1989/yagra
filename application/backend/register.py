@@ -61,9 +61,12 @@ class RegisterHelper(object):
 
     @staticmethod
     def send_confirm_email(email):
-        serializer = ConfirmURLSerializer(config.secret_key_for_confirm_link)
+        serializer = ConfirmURLSerializer()
         token = serializer.dumps(email, salt=config.salt_for_confirm_link)
-        email_info = config.email_info % token
+        email_info = config.email_info.format(
+            host=os.environ['HTTP_HOST'],
+            request_root=os.environ['REQUEST_ROOT'],
+            token=token)
         send_mail(config.smtp_server,
                   config.admin_email,
                   config.admin_email_passwd,
@@ -81,7 +84,7 @@ class RegisterHelper(object):
 
     @staticmethod
     def check_confirm_link(token):
-        serializer = ConfirmURLSerializer(config.secret_key_for_confirm_link)
+        serializer = ConfirmURLSerializer()
         email = serializer.loads(
             token,
             salt=config.salt_for_confirm_link,

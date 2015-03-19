@@ -14,7 +14,9 @@ from application.config import config
 from application.utility import feedback_msg as msg
 from application.utility.json_result import JsonResult
 from application.utility.json_result import ErrorJsonResult
+from application.utility.utility import assemble_avatar_dir
 from application.utility.utility import cgi_error_logging
+from application.utility.utility import get_request_url_for_avatar
 from framework.jsonify import jsonify
 from framework.session import Session
 
@@ -28,10 +30,24 @@ class Upload(object):
     LIMIT_SIZE = CHUNK_SIZE * 10
 
     def __init__(self):
+        """Assume user's id in database is 1,
+        uploaded file name is test.jpg,
+        config.parent_dir_for_avatar_dir = '/tmp' and
+        config.avatar_dir_name = 'avatar', then:
+
+        self._upload_file_name = test.jpg
+        self._extension = jpg
+        self._safe_file_name = '%010d.%s' % (1, jpg) = 0000000001.jpg
+        self._sub_storage_dir = 000/000
+        self._full_storage_dir = /tmp/avatar/000/000/
+        self._full_avatar_file_name = /tmp/avatar/000/000/0001.jpg
+        """
         self._upload_file_name = None
         self._extension = None
         self._safe_file_name = None
         self._sub_storage_dir = None
+        self._full_storage_dir = None
+        self._full_avatar_file_name = None
 
     def _validate_file_name(self):
         fn = os.path.basename(self._upload_file_name)
@@ -43,30 +59,35 @@ class Upload(object):
         except IndexError:
             return False
 
-    def _make_storage_dir(self, user_id):
+    def _assemble_full_storage_dir(self, sub_storage_dir):
+        parent_dir = assemble_avatar_dir()
+        return os.path.join(parent_dir, sub_storage_dir)
+
+    def _prepare_dir_and_filename(self, user_id):
         # Replace the original filename to avoid unsafe symbol
         safe_file_name_str = "%010d.%s" % (user_id, self._extension)
         self._safe_file_name = safe_file_name_str[6:]
-        sub_storage_dir = [safe_file_name_str[0:3],
-                           safe_file_name_str[3:6],
-                           ]
-        self._sub_storage_dir = os.path.sep.join(sub_storage_dir)
-        avatar_dir = os.path.sep.join([config.avatar_storage_top_path,
-                                       self._sub_storage_dir, ''
-                                       ])
-        if not os.path.exists(config.avatar_storage_top_path):
-            os.makedirs(config.avatar_storage_top_path)
-        os.chdir(config.avatar_storage_top_path)
-        for dir in sub_storage_dir:
-            if not os.path.exists(dir):
-                os.makedirs(dir)
-                os.chdir(dir)
-        return avatar_dir
+        self._sub_storage_dir = os.path.join(safe_file_name_str[0:3],
+                                             safe_file_name_str[3:6],
+                                             )
+        self._full_storage_dir = self._assemble_full_storage_dir(
+            self._sub_storage_dir)
+        self._full_avatar_file_name = os.path.join(
+            self._full_storage_dir,
+            self._safe_file_name
+            )
+        if not os.path.exists(self._full_storage_dir):
+            try:
+                os.makedirs(self._full_storage_dir, 0770)
+            except OSError as err:
+                errmsg = ("%s when trying to create the avatar dir:%s." %
+                          (err.strerror, self._full_storage_dir)
+                          )
+                raise OSError(errmsg)
 
-    def _read_file(self, path, file_name):
-        full_name = path + file_name
+    def _save_file(self):
         read_size = 0
-        with open(full_name, 'wb+') as fp:
+        with open(self._full_avatar_file_name, 'wb+') as fp:
             while True:
                 chunk = self._fileitem.file.read(Upload.CHUNK_SIZE)
                 if not chunk:
@@ -76,6 +97,11 @@ class Upload(object):
                     raise FileTooBigError()
                 else:
                     fp.write(chunk)
+
+    def _assemble_avatar_url_in_db(self):
+        return os.path.sep.join([self._sub_storage_dir,
+                                 self._safe_file_name
+                                 ])
 
     def _upload_handler(self):
         try:
@@ -95,17 +121,13 @@ class Upload(object):
         self._upload_file_name = self._fileitem.filename
         if self._validate_file_name():
 
-            path = self._make_storage_dir(user_id)
-            self._read_file(path, self._safe_file_name)
+            self._prepare_dir_and_filename(user_id)
+            self._save_file()
 
-            avatar_url_in_db = os.path.sep.join([self._sub_storage_dir,
-                                                 self._safe_file_name
-                                                 ])
+            avatar_url_in_db = self._assemble_avatar_url_in_db()
             AvatarHelper.updata_avatar_key(user_id, avatar_url_in_db)
 
-            avatar_url = os.path.sep.join([config.avatar_request_path,
-                                           avatar_url_in_db
-                                           ])
+            avatar_url = get_request_url_for_avatar(avatar_url_in_db)
             # Append a timestamp to disable browser cached.
             result = {'img': '?'.join([avatar_url, str(time.time())]),
                       'info': msg.UPLOAD_SUCCEED,

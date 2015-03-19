@@ -53,8 +53,7 @@ def base64_decode(string):
 
 class ConfirmURLSerializer(object):
 
-    def __init__(self, secret_key, hash_func=hashlib.sha256):
-        self._secret_key = secret_key
+    def __init__(self, hash_func=hashlib.sha256):
         self._sep = '.'
         self._hash_func = hash_func
 
@@ -62,7 +61,7 @@ class ConfirmURLSerializer(object):
         return int(time.time()-EPOCH)
 
     def _generate_signature(self, value, salt):
-        hash_ = self._hash_func(salt + b'yagra' + self._secret_key)
+        hash_ = self._hash_func(salt + b'yagra' + '')
         hash_.update(value)
         sig = hash_.digest()
         return sig
@@ -139,4 +138,4 @@ class ConfirmURLSerializer(object):
 
 if __name__ == '__main__':
     import doctest
-    doctest.testmod(extraglobs={'seriz': ConfirmURLSerializer('key')})
+    doctest.testmod(extraglobs={'seriz': ConfirmURLSerializer()})
