@@ -1,7 +1,11 @@
-#!--*--coding:utf8--*--
+# --*--coding:utf8--*--
+"""
+    Avatar database operation.
+"""
 
 import hashlib
 
+from application.backend import table_name
 from application.backend.mysql_helper import get_db_cursor
 
 
@@ -9,7 +13,8 @@ class AvatarHelper(object):
 
     @staticmethod
     def updata_avatar_key(id, avatar_url):
-        SQL = "select email from users where id=%s"
+        SQL = "select email from {0} where id=%s".format(
+            table_name.USERS)
         with get_db_cursor() as cursor:
             cursor.execute(SQL, (id, ))
             result = cursor.fetchone()
@@ -23,7 +28,8 @@ class AvatarHelper(object):
     @staticmethod
     def select_url_for_avatar(key):
         with get_db_cursor() as cursor:
-            SQL = "select avatar_url from users where avatar_key=%s"
+            SQL = "select avatar_url from {0} where avatar_key=%s".format(
+                table_name.USERS)
             cursor.execute(SQL, (key, ))
             result = cursor.fetchone()
             if result:

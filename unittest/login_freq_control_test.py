@@ -1,20 +1,28 @@
 # --*--coding:utf8--*--
+'''
+    UnitTest for frequency control of error signin.
+    Using mutliple processes to test concurrency is correct or not.
+'''
 
 import sys
 import os
 import unittest
 
-os.environ['DOCUMENT_ROOT'] = '/var/www/yagra/'
-sys.path.append(os.environ['DOCUMENT_ROOT'])
-os.environ['HTTP_HOST'] = 'whatever'
+def mock_environment():
+    os.environ['DOCUMENT_ROOT'] = '/var/www/yagra/'
+    sys.path.append(os.environ['DOCUMENT_ROOT'])
+    os.environ['HTTP_HOST'] = 'whatever'
+    os.environ['REQUEST_ROOT'] = 'whatever'
+mock_environment()
+
+from multiprocessing import Process, Pipe
 
 from application.backend.signin import SigninHelper
 from application.backend.signin import TryTooMuchError
 
 
-class ACTestCase(unittest.TestCase):
+class FreqControlTestCase(unittest.TestCase):
     def setUp(self):
-        from multiprocessing import Process, Pipe
         processes = []
         self.results = []
         for i in xrange(100):
@@ -28,7 +36,7 @@ class ACTestCase(unittest.TestCase):
         for pp, p in processes:
             p.join()
 
-    def test_access_contral(self):
+    def test_freq_contral(self):
         print self.results
         l = len(filter(None, self.results))
         self.assertTrue(l == SigninHelper.THRESHOLD)
@@ -47,7 +55,5 @@ class ACTestCase(unittest.TestCase):
         pass
 
 
-if __name__=='__main__':
-    #import doctest
-    #doctest.testmod(extraglobs={'t': FrequencyControl()})
+if __name__ == '__main__':
     unittest.main()

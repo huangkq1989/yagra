@@ -1,18 +1,21 @@
 # --*--coding:utf8--*--
+"""
+    Destroy the session when user signout.
+"""
 
-from application.utility.session import Session
-from application.utility.render_template import render_index
+from application.utility.utility import render_index
 from application.utility.utility import cgi_error_logging
+from application.config import config
+from framework.session import Session
 
 
 class Signout(object):
-    VALIDE_EXTENSION = tuple('jpg jpe jpeg png gif'.split())
 
     def __init__(self):
         pass
 
     def _signout_handler(self):
-        sess = Session(cookie_path='/')
+        sess = Session()
         sess.destory_session()  # Not matter expired or not expired
         return render_index()
 
@@ -20,7 +23,8 @@ class Signout(object):
         try:
             self._signout_handler()
         except Exception as err:
-            cgi_error_logging(err.message)
+            cgi_error_logging(err.message,
+                              verbose=config.do_verbose_err_log)
             return render_index()
 
 

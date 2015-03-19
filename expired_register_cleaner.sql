@@ -1,4 +1,12 @@
-CREATE EVENT clearExpiredRegistration  ON SCHEDULE  EVERY 1 HOUR DO DELETE FROM yagra.users WHERE users.confirmed=0 and TIMESTAMPDIFF(SECOND, yagra.users.register_on, NOW()) > 3600;  
+-- create event.
+CREATE EVENT clearExpiredRegistration  
+ON SCHEDULE  
+EVERY 1 HOUR 
+DO  
+    DELETE FROM yagra.users WHERE users.confirmed=0 and TIMESTAMPDIFF(SECOND, yagra.users.register_on, NOW()) > 3600;  
+
+-- enable event.
 SET GLOBAL event_scheduler = ON; 
 
+--drop event.
 --drop event clearExpiredRegistration;

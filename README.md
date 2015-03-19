@@ -1,16 +1,6 @@
 # yagra
 
-Yet Another GRAvatar
+Yet Another GRAvatar, use cgi to implement, without any web framework.
+But in the source, a simple likeness framework was implemented.
 
-
-# Import 
-> Browser can cache picture, need take action to make sure browser  
-  get the new upload avatar.
-
-> Cookie and session is a challenge
-
-> Exit by closing browser withou click exit button.
-
-> the picture uploaded contains links which can excute a CSRF attack.
-
-> picture path contain insecure in to 
+Design document and install document please read *yagra.md*.

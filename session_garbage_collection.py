@@ -1,4 +1,11 @@
 # --*--coding:utf8--*--
+"""
+    Session garbage collection daemon.
+
+    When network was down unexpectly, session will not destroy
+    correctly, so the gc will check session is expired or not,
+    then destroy it safely.
+"""
 
 import os
 import logging
@@ -19,14 +26,13 @@ class SessionGC(object):
     def do_gc(self):
         dir = os.listdir(self._session_dir)
         for file in dir:
-            print file
             data = shelve.open(file, writeback=True)
             try:
                 expire_time = data['cookie']['expires']
                 if expire_time < time.time():
                     os.remove(file)
                     logging.debug("session(%s) was deleted", file)
-            except KeyError as err:
+            except KeyError:
                 pass
 
     def do_gc_cron(self):

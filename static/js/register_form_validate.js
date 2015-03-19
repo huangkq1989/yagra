@@ -15,7 +15,7 @@ $(document).ready(function() {
                         message: 'Email exists',
                         url: request_root + '/app.py/check_email', 
                         type: 'POST', 
-                        delay: 500,
+                        delay: 50,
                     }
                 }
             },
@@ -37,7 +37,7 @@ $(document).ready(function() {
                         message: 'name exists',
                         url: request_root + '/app.py/check_name', 
                         type: 'POST', 
-                        delay: 2000,
+                        delay: 50,
                     }
                 }                                                                       
             },                                                                        

@@ -1,10 +1,14 @@
-#!--*--coding:utf8--*--
+# --*--coding:utf8--*--
+"""
+    MySQL operation for signin.
+"""
 
 import hashlib
 import time
 
 from application.backend import table_name
 from application.backend.mysql_helper import get_db_cursor
+from application.utility import feedback_msg as msg
 from application.utility.utility import constant_time_compare
 from application.utility.utility import pbkdf2_hmac
 
@@ -15,24 +19,24 @@ class ValidUserError(Exception):
 
 
 class NeedConfirmException(Exception):
-    pass
+    def __init__(self, msg=msg.SIGNIN_NEED_CONFIRM):
+        self.message = msg
 
 
 class TryTooMuchError(Exception):
-    pass
+    def __init__(self, msg=msg.SIGNIN_TRY_TOO_MUCH):
+        self.message = msg
 
 
 class SigninHelper(object):
-    """Handle Register by interacting with MySQL.
-    And sending an confirm email where handle a new register request.
-    """
 
     THRESHOLD = 5
     INTERVAL_SECONDS = 5 * 60
-    FORBIDDEN_INERVAL = 60
+    FORBIDDEN_INERVAL = 30 * 60
 
     @staticmethod
     def check_valid(name, plain_password):
+        '''Check user and password if valid.'''
         allowance = SigninHelper.check_frequency(name)
         SELECT = ("select id, password, salt," +
                   " avatar_url, confirmed  from {0}" +
@@ -57,9 +61,11 @@ class SigninHelper(object):
 
     @staticmethod
     def check_frequency(name):
-        """check frequency of error login
-
+        """Check frequency of login, every `INTERVAL_SECONDS` only
+        can try `THRESHOLD` at most. If all chance was used up, then
+        have to wait for `FORBIDDEN_INERVAL` senconds.
         """
+
         INSERT = ("insert {0} (username, last_time, allowance) " +
                   " value (%s, %s, %s)").format(table_name.ACCESS_CONTROL)
         SELECT = ("select last_time, allowance " +
@@ -77,14 +83,14 @@ class SigninHelper(object):
             user_info = cursor.fetchone()
 
             if not user_info:
-                allowance = SigninHelper.THRESHOLD-1
+                allowance = SigninHelper.THRESHOLD - 1
                 cursor.execute(INSERT, (name, time.time(), allowance))
                 return allowance
             else:
                 last_time, allowance = user_info
 
             if (time.time() - last_time) > SigninHelper.FORBIDDEN_INERVAL:
-                allowance = SigninHelper.THRESHOLD-1
+                allowance = SigninHelper.THRESHOLD - 1
                 current = time.time()
                 cursor.execute(UPDATE,
                                (current, SigninHelper.THRESHOLD-1, name))

@@ -1,26 +1,20 @@
-#!/usr/local/bin/python2.7
+#!/usr/bin/env python
 # --*--coding:utf8--*--
 
-import os
+"""
+    App entry, routing the request to the corresponding handler.
+"""
 
-def init_request_root():
-    request_uri = os.environ['REQUEST_URI']
-    base_name = os.path.basename(__file__)
-    request_root = request_uri.split(base_name)[0] 
-    request_root = request_root if request_root != '/' else ''
-    os.environ['REQUEST_ROOT'] = request_root
-
-
-init_request_root()
-
+from framework.environ import init_request_root
+init_request_root(__file__)
 
 from application.avatar import VisteAvatar
 from application.register import Register
 from application.signin import Signin
 from application.signout import Signout
 from application.upload import Upload
-from application.utility.app_runner import AppRunner
-from application.utility.render_template import render_index
+from framework.app_runner import AppRunner
+from application.utility.utility import render_index
 
 
 #app = AppRunner(debug=False)

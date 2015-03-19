@@ -1,4 +1,7 @@
-#!--*--coding:utf8--*--
+# --*--coding:utf8--*--
+"""
+    Utility functions.
+"""
 
 import binascii
 import smtplib
@@ -9,7 +12,8 @@ from email.mime.text import MIMEText
 from email.header import Header
 from itertools import izip
 
-from application.config import config
+from application.utility import feedback_msg as msg
+from framework.render_template import render_template
 
 
 def constant_time_compare(val1, val2):
@@ -17,6 +21,17 @@ def constant_time_compare(val1, val2):
     The time taken is independent of the number of characters that match.  Do
     not use this function for anything else than comparision with known
     length targets.
+
+    >>> constant_time_compare('123', '213')
+    False
+    >>> constant_time_compare('123', '123')
+    True
+    >>> constant_time_compare('123', '12')
+    False
+    >>> constant_time_compare(123, 12)
+    Traceback (most recent call last):
+    ...
+    TypeError: object of type 'int' has no len()
     """
     diff = len(val1) ^ len(val2)
     for x, y in izip(bytearray(val1), bytearray(val2)):
@@ -30,11 +45,16 @@ _trans_36 = b"".join(chr(x ^ 0x36) for x in range(256))
 
 def pbkdf2_hmac(hash_func, password, salt, iterations, dklen=None):
     """Password based key derivation function 2 (PKCS #5 v2.0)
-    -- !!! refer to hashlib.py in python2.7.9
+    *Attention*: This function refers to hashlib.py in python2.7.9
 
     This Python implementations based on the hmac module about as fast
     as OpenSSL's PKCS5_PBKDF2_HMAC for short passwords and much faster
     for long passwords.
+
+    >>> import hashlib
+    >>> dk = pbkdf2_hmac(hashlib.sha256, 'password', 'salt', 100000)
+    >>> binascii.hexlify(dk)
+    '0394a2ede332c9a13eb82e9b24631604c31df978b4e2f0fbd2c549944f9d79a5'
     """
 
     if not isinstance(password, (bytes, bytearray)):
@@ -84,13 +104,14 @@ def pbkdf2_hmac(hash_func, password, salt, iterations, dklen=None):
     return dkey[:dklen]
 
 
-def send_mail(sender, sender_pw, receiver, subject, mail_info, debug=False):
+def send_mail(smtp_server, sender, sender_pw,
+              receiver, subject, mail_info, debug=False):
     msg = MIMEText(mail_info, 'html', 'utf-8')
     msg['From'] = sender
     msg['To'] = receiver
     msg['Subject'] = Header(subject, 'utf-8')
     smtp = smtplib.SMTP()
-    smtp.connect(config.smtp_server)
+    smtp.connect(smtp_server)
     smtp.login(sender, sender_pw)
     if debug:
         smtp.set_debuglevel(1)
@@ -98,8 +119,36 @@ def send_mail(sender, sender_pw, receiver, subject, mail_info, debug=False):
     smtp.quit()
 
 
-def cgi_error_logging(message):
-    if config.do_verbose_err_log:
+def cgi_error_logging(message, verbose=True):
+    '''Log to http log, for example, when specified directive
+    `ErrorLog logs/yagra.com-error_log` in Apache configuration,
+    then error info will write to logs/yagra.com-error_log
+    '''
+    if verbose:
         sys.stderr.write(traceback.format_exc())
     else:
         sys.stderr.write(message)
+
+
+def render_inform(header, info):
+    '''Response inform.html to show notification information.'''
+    return render_template(
+        'inform.html',
+        info_header=header,
+        info=info
+        )
+
+
+def render_index(alert_type=msg.SIGNIN_ALERT_TYPE_INFO,
+                 info=msg.SIGNIN_MSG_WELCOME):
+    '''Response signin.html as index page.'''
+    return render_template(
+        "signin.html",
+        alert_type=alert_type,
+        info=info
+        )
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()

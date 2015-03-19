@@ -1,16 +1,26 @@
 # --*--coding:utf8--*--
+"""
+    Bussiness Logic for registartion. Email, username and password
+    are required, which email and username must be unique.
+
+    After user submits the form, will send a confirm email to user,
+    when user clicks the confirm email, registration is done.
+"""
 
 import cgi
 import functools
+import sys
 
-from application.backend.register import AlreadyConfirmError
+from application.utility.confirm_url_serializer import AlreadyConfirmError
+from application.utility.confirm_url_serializer import FakeConfirmURLError
+from application.utility.confirm_url_serializer import TimedOutURLError
+from application.utility.json_result import FormValidateResult
 from application.backend.register import RegisterHelper
-from application.backend.register import FakeConfirmURLError
-from application.utility.json_result import  FormValidateResult
-from application.utility.jsonify import jsonify
-from application.utility.render_template import render_index
-from application.utility.render_template import render_inform
-from application.utility.render_template import render_template
+from application.utility import feedback_msg as msg
+from application.utility.utility import render_index
+from application.utility.utility import render_inform
+from framework.jsonify import jsonify
+from framework.render_template import render_template
 
 
 def check_field(field_name):
@@ -38,44 +48,53 @@ class Register(object):
 
     @check_field(EMAIL_FIELD)
     def check_email(self, email):
+        '''Check email is still avariable or not.'''
         return RegisterHelper.validate_email(email)
 
     @check_field(NAME_FIELD)
     def check_name(self, name):
+        '''Check user name is still avariable or not.'''
         return RegisterHelper.validate_name(name)
 
     def register(self):
+        '''Handle registration by insert to database
+        and send a comfirm email.
+        '''
+
         form = cgi.FieldStorage()
         if (EMAIL_FIELD not in form or
                 NAME_FIELD not in form or
                 PASSWD_FIELD not in form):
             return render_template('register.html')
-            # return render_inform("Error request", 'Error request')
         else:
             email = form.getvalue(EMAIL_FIELD)
             name = form.getvalue(NAME_FIELD)
             passwd = form.getvalue(PASSWD_FIELD)
             RegisterHelper.store_to_database(email, name, passwd)
-            RegisterHelper.send_confirm_email(email)
-            return render_inform(
-                "Please Confirm",
-                'Welcome! Thanks for  signing up. \
-                Please login your email to activate your account.'
-                )
+            try:
+                RegisterHelper.send_confirm_email(email)
+                return render_inform(msg.INFORM_TITLE_NEED_CONFIRM,
+                                     msg.INFORM_MSG_NEED_CONTIRM)
+            except Exception as err:
+                RegisterHelper.rollback_record(email)
+                (exc, exc_type, tb) = sys.exc_info()
+                raise err, None, tb
 
     def confirm_email(self):
+        '''Check confirm request is valid or not.'''
         URL = 'url'
         form = cgi.FieldStorage()
-        if URL not in form:
-            return render_inform('Error', 'invalid confirm link')
-        else:
+        try:
+            if URL not in form:
+                raise FakeConfirmURLError()
             url = form.getvalue(URL)
-            try:
-                if RegisterHelper.confirm_email(url):
-                    return render_index('info',
-                                        'Confirm success, please signin. :)')
-            except AlreadyConfirmError:
-                return render_index('info',
-                                    'Already Confirmed, please signin. :)')
-            except FakeConfirmURLError:
-                return render_inform('Error', 'Invalid confirm link')
+
+            if RegisterHelper.check_confirm_link(url):
+                return render_index(msg.SIGNIN_ALERT_TYPE_INFO,
+                                    msg.SIGNIN_MSG_CONFIRM_SUCCESS)
+        except AlreadyConfirmError as err:
+            return render_index(msg.SIGNIN_ALERT_TYPE_DANGER, err.message)
+        except FakeConfirmURLError as err:
+            return render_inform(msg.INFORM_TITLE_ERROR, err.message)
+        except TimedOutURLError as err:
+            return render_inform(msg.INFORM_TITLE_ERROR, err.message)
