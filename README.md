@@ -38,10 +38,10 @@ md5值用hashlib.md5('yagra_admin@163.com').hexdigest()得到。
       `sign = hash.update(salt).digest()`得到一个签名，   
       然后将`sep.join([base64(email), base64_encode(time),base64_encode(sign)])`     
       得到一个字符串，用户确认时根据该字符串反解，看是否合法和未超时。
-      具体实现在application.utility.confirm_url_serializer中。   
+      具体实现在`application.utility.confirm_url_serializer`中。   
 
 4.  登录功能如何防止攻击：  
-    > 密码的存储与比较的安全问题参考Salted Password Hashing[1]。  
+    > 密码的存储与比较的安全问题参考[Salted Password Hashing]。  
 
     > 同时为防止在线暴力猜测密码，使用频率来控制错误账号密码登录，每一个M分钟内
       只能试N次，若完全用完则需要等待K分钟，其中M、N、K可配置。  
@@ -49,7 +49,7 @@ md5值用hashlib.md5('yagra_admin@163.com').hexdigest()得到。
 5. **HTTP的cache特性**：  
     > 在用户重新上传avatar时，原来的avatar可能被浏览器所缓存，导致新上传的avatar
       不会马上显示，因此在上传avatar后，再次请求avatar需要绕过缓存功能。
-      HTTP缓存特性在RFC2616的第十四节[2]及stack overflow[3][4]有描述。  
+      HTTP缓存特性在RFC2616的[第十四节]及stack overflow[1]及[2]有描述。  
 
     > 在本系统中，有两类访问avatar的情况，一种是外站访问，一种是本站访问，外站
       访问时通过MD5即可，因此，响应图片时应添加抑制缓存的HTTP头。考虑到兼容性，
@@ -100,15 +100,15 @@ md5值用hashlib.md5('yagra_admin@163.com').hexdigest()得到。
       `render_template`支持模板继承和变量功能，通过正则表达式来实现。  
       支持以下语法：
 
-    # extends template
-    {% extends template.html %}
+        # extends template
+        {% extends template.html %}
 
-    # block feature
-    {% block blockname %}
-    {% endblock %}
+        # block feature
+        {% block blockname %}
+        {% endblock %}
 
-    # variable
-    {variable}
+        # variable
+        {variable}
 
 
 ###数据库设计###
@@ -173,7 +173,7 @@ MyISAM有二进制可移植等优点，易于维护。
         都有同样的表现(避免非法用户猜测用户名)，将access_control独立为一个表，不存在的用户
         也和存在的用户同样地处理。  
 	2. last_time是用户上一次的访问时间，allowance是用户还有多少尝试机会的次数。  
-    3. 这个表可以定期truncate一下，清理一下内存。  
+    3. 这个表可以定期truncate一下，清理一下存储空间。  
 	
 
 ####索引设计####
@@ -265,7 +265,7 @@ MyISAM有二进制可移植等优点，易于维护。
 3. 在`yagra/config/config.py` 进行配置各参数，主要是数据库参数。  
 
 
-[1]: https://crackstation.net/hashing-security.htm "Salted Password Hashing"  
-[2]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9 "RFC2616"
-[3]: http://stackoverflow.com/questions/49547/making-sure-a-web-page-is-not-cached-across-all-browsers
-[4]: http://stackoverflow.com/questions/3137934/how-to-clear-browser-cache-when-re-uploading-image-with-same-filename-in-php
+[Salted Password Hashing]: https://crackstation.net/hashing-security.htm "Salted Password Hashing"  
+[第十四节]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9 "RFC2616"
+[1]: http://stackoverflow.com/questions/49547/making-sure-a-web-page-is-not-cached-across-all-browsers
+[2]: http://stackoverflow.com/questions/3137934/how-to-clear-browser-cache-when-re-uploading-image-with-same-filename-in-php
