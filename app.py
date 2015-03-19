@@ -1,13 +1,20 @@
-#!/usr/local/bin/python2.7
+#!/usr/bin/env python
 # --*--coding:utf8--*--
+
+"""
+    App entry, routing the request to the corresponding handler.
+"""
+
+from framework.environ import init_request_root
+init_request_root(__file__)
 
 from application.avatar import VisteAvatar
 from application.register import Register
 from application.signin import Signin
 from application.signout import Signout
 from application.upload import Upload
-from application.utility.app_runner import AppRunner
-from application.utility.render_template import render_index
+from framework.app_runner import AppRunner
+from application.utility.utility import render_index
 
 
 #app = AppRunner(debug=False)

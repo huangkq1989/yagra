@@ -1,4 +1,8 @@
-#!--*--coding:utf8--*--
+# --*--coding:utf8--*--
+"""
+    
+    MySQLdb wrapper, auto handle connection release.
+"""
 
 import contextlib
 import sys
@@ -10,6 +14,7 @@ from application.config import config
 
 @contextlib.contextmanager
 def get_db_cursor():
+    '''Wrapper of getting a cursor of MySQLdb.'''
     connect = MySQLdb.connect(
         host=config.db_host,
         port=config.db_port,
@@ -18,10 +23,14 @@ def get_db_cursor():
         db=config.db_name,
         )
     try:
-        yield connect.cursor()
+        cursor = connect.cursor()
+        yield cursor
     except Exception as err:
+        connect.rollback()
         (exc, exc_type, tb) = sys.exc_info()
         raise err, None, tb
-        connect.rollback()
     else:
         connect.commit()
+    finally:
+        cursor.close()
+        connect.close()

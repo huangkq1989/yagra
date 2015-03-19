@@ -1,8 +1,5 @@
 $(document).ready(function() {                                                  
-    var info = $("#error-info").val();                                            
-    if(info) {                                                                    
-        alert(info);                                                                
-    }                                                                             
+    var request_root = $("#request_root").val();
     $('#register_form').bootstrapValidator({                                         
         message: 'This value is not valid',                                         
         fields: {                                                                   
@@ -16,9 +13,9 @@ $(document).ready(function() {
                     },
                     remote: {
                         message: 'Email exists',
-                        url: '/yagra/app.py/check_email', 
+                        url: request_root + '/app.py/check_email', 
                         type: 'POST', 
-                        delay: 500,
+                        delay: 50,
                     }
                 }
             },
@@ -38,9 +35,9 @@ $(document).ready(function() {
                     },
                     remote: {
                         message: 'name exists',
-                        url: '/yagra/app.py/check_name', 
+                        url: request_root + '/app.py/check_name', 
                         type: 'POST', 
-                        delay: 2000,
+                        delay: 50,
                     }
                 }                                                                       
             },                                                                        
