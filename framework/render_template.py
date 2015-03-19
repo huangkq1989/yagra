@@ -91,7 +91,7 @@ def render_template(file_name, **kwargs):
     kwargs['request_root'] = os.environ['REQUEST_ROOT']
     for k, v in kwargs.iteritems():
         p = re.compile('{\s*' + k + '\s*}')
-        escaped_value = cgi.escape(kwargs[k], quote=True)
+        escaped_value = cgi.escape(v, quote=True)
         template = p.sub(escaped_value, template)
 
     print template

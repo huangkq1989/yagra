@@ -8,6 +8,7 @@ import time
 
 from application.backend import table_name
 from application.backend.mysql_helper import get_db_cursor
+from application.config import config
 from application.utility import feedback_msg as msg
 from application.utility.utility import constant_time_compare
 from application.utility.utility import pbkdf2_hmac
@@ -30,9 +31,9 @@ class TryTooMuchError(Exception):
 
 class SigninHelper(object):
 
-    THRESHOLD = 5
-    INTERVAL_SECONDS = 5 * 60
-    FORBIDDEN_INERVAL = 30 * 60
+    THRESHOLD = config.threshold
+    INTERVAL_SECONDS = config.interval_seconds 
+    FORBIDDEN_INERVAL = config.forbidden_inerval 
 
     @staticmethod
     def check_valid(name, plain_password):

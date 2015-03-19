@@ -14,6 +14,7 @@ import sys
 
 from application.backend.avatar import AvatarHelper
 from application.config import config
+from application.utility.utility import assemble_avatar_dir
 from framework.render_template import print_headers
 
 
@@ -37,9 +38,6 @@ class VisteAvatar(object):
         If not exist, return the default avatar to browser.
         """
         avatar_full_name = None
-        default_avatar = os.path.sep.join([config.avatar_storage_top_path,
-                                           config.default_avatar_file_name
-                                           ])
         try:
             request_uri = os.environ['PATH_INFO'][1:]
             result = request_uri.rsplit('/')
@@ -48,14 +46,14 @@ class VisteAvatar(object):
             else:
                 key = request_uri
         except KeyError:
-            avatar_full_name = default_avatar
+            avatar_file = config.default_avatar_file_name
         else:
             avatar_url_in_db = AvatarHelper.select_url_for_avatar(key)
             if avatar_url_in_db:
-                avatar_full_name = os.path.sep.join(
-                    [config.avatar_storage_top_path,
-                     avatar_url_in_db
-                     ])
+                avatar_file = avatar_url_in_db
             else:
-                avatar_full_name = default_avatar
+                avatar_file = config.default_avatar_file_name
+
+        avatar_dir = assemble_avatar_dir()
+        avatar_full_name = os.path.join(avatar_dir, avatar_file)
         self._response_image(avatar_full_name)

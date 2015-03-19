@@ -5,9 +5,6 @@
     App entry, routing the request to the corresponding handler.
 """
 
-from framework.environ import init_request_root
-init_request_root(__file__)
-
 from application.avatar import VisteAvatar
 from application.register import Register
 from application.signin import Signin
@@ -17,8 +14,7 @@ from framework.app_runner import AppRunner
 from application.utility.utility import render_index
 
 
-#app = AppRunner(debug=False)
-app = AppRunner(debug=True)
+app = AppRunner(entry_file=__file__, debug=False)
 
 
 @app.route("/")

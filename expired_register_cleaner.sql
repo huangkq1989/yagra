@@ -1,3 +1,6 @@
+-- If user does not click the confirm link in time, 
+-- registration is expired, should be delete it.
+
 -- create event.
 CREATE EVENT clearExpiredRegistration  
 ON SCHEDULE  

@@ -1,6 +1,6 @@
 #!--*--coding:utf8--*--
 '''
-    Session Management. 
+    Session Management.
 '''
 
 import Cookie
@@ -41,11 +41,13 @@ class Session(object):
         if cookie_path:
             self.cookie['sid']['path'] = cookie_path
 
-        self._mkdir_for_session_if_not_exists(config.session_dir)
+        self._assemble_session_dir()
+        self._mkdir_for_session_if_not_exists()
 
-        self.data = shelve.open(self._gen_session_file_name(sid),
+        self._session_file_name = self._gen_session_file_name(sid)
+        self.data = shelve.open(self._session_file_name,
                                 writeback=True)
-        os.chmod(config.session_dir + '/sess_' + sid, 0660)
+        os.chmod(self._session_file_name, 0660)
         # Initializes the expires data
         if not self.data.get('cookie'):
             self.data['cookie'] = {'expires': ''}
@@ -54,9 +56,8 @@ class Session(object):
         self.data.close()
 
     def destory_session(self):
-        session_file = self._gen_session_file_name(self.cookie['sid'].value)
-        if os.path.exists(session_file):
-            os.remove(session_file)
+        if os.path.exists(self._session_file_name):
+            os.remove(self._session_file_name)
 
     def set_cookie_to_respone(self):
         print self.cookie.output()
@@ -83,17 +84,27 @@ class Session(object):
             raise InvalidExpiredType()
 
     def _gen_session_file_name(self, sid):
-        return config.session_dir + '/sess_' + sid
+        return self._session_dir + '/sess_' + sid
 
-    def _mkdir_for_session_if_not_exists(self, session_dir):
+    def _assemble_session_dir(self):
+        if not config.parent_dir_for_session_dir:
+            self._session_dir = os.path.join(
+                os.environ['DOCUMENT_ROOT'],
+                config.session_dir_name
+                )
+        else:
+            self._session_dir = os.path.join(
+                config.parent_dir_for_session_dir,
+                config.session_dir_name
+                )
 
-        if not os.path.exists(session_dir):
+    def _mkdir_for_session_if_not_exists(self):
+        if not os.path.exists(self._session_dir):
             try:
-                os.mkdir(session_dir, 0770)
-            except OSError, e:
+                os.mkdir(self._session_dir, 0770)
+            except OSError as e:
                 errmsg = """%s when trying to create the session directory.  \
-                         Create it as '%s'""" % (e.strerror,
-                                                 os.path.abspath(session_dir))
+                         Create it as '%s'""" % (e.strerror, self._session_dir)
                 # If the HTTP(apache/nginx) user can't create it,
                 # then create it manualy
                 raise OSError(errmsg)

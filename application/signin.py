@@ -7,7 +7,6 @@
 """
 
 import cgi
-import os
 import time
 
 from application.backend.signin import SigninHelper
@@ -16,7 +15,10 @@ from application.backend.signin import NeedConfirmException
 from application.backend.signin import ValidUserError
 from application.config import config
 from application.utility import feedback_msg as msg
+from application.utility.utility import get_default_avatar_request_url
+from application.utility.utility import get_request_url_for_avatar
 from application.utility.utility import render_index
+from application.upload import Upload
 from framework.render_template import render_template
 from framework.session import Session
 
@@ -37,13 +39,15 @@ class Signin():
         return error_tip
 
     def _assemble_one_session(self, id):
+        sess = None
         try:
             sess = Session(cookie_path='/')
             sess.data['id'] = id
             sess.set_expires(config.session_expires_interval)
             sess.set_cookie_to_respone()
         finally:
-            sess.close()
+            if sess:
+                sess.close()
 
     def signin(self):
         form = cgi.FieldStorage()
@@ -56,23 +60,22 @@ class Signin():
             passwd = form.getvalue(Signin.PASSWD_FIELD)
 
             try:
-                id, avatar_url = SigninHelper.check_valid(name, passwd)
+                id, avatar_url_in_db = SigninHelper.check_valid(name, passwd)
 
                 self._assemble_one_session(id)
 
-                if not avatar_url:  # Didn't upload a avatar yet.
-                    avatar_url = config.default_avatar_url
+                if not avatar_url_in_db:  # Didn't upload a avatar yet.
+                    avatar_url = get_default_avatar_request_url()
                 else:
-                    avatar_url = os.path.sep.join([config.avatar_request_path,
-                                                   avatar_url
-                                                   ])
+                    avatar_url = get_request_url_for_avatar(avatar_url_in_db)
 
                 # Append a timestamp to disable browser cached.
                 avatar_url = '?'.join([avatar_url, str(time.time())])
-                info_str = msg.UPLOAD_TIP % str(config.valid_extension)
+                info_str = msg.UPLOAD_TIP % (str(config.valid_extension),
+                                             (Upload.LIMIT_SIZE / 1024))
                 return render_template("main.html",
                                        user=cgi.escape(name, quote=True),
-                                       img=avatar_url, alert_type="info",
+                                       img=avatar_url,
                                        info=info_str)
             except TryTooMuchError as err:
                 return render_index(msg.SIGNIN_ALERT_TYPE_DANGER,

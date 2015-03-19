@@ -4,6 +4,7 @@
 """
 
 import binascii
+import os
 import smtplib
 import struct
 import sys
@@ -12,6 +13,7 @@ from email.mime.text import MIMEText
 from email.header import Header
 from itertools import izip
 
+from application.config import config
 from application.utility import feedback_msg as msg
 from framework.render_template import render_template
 
@@ -147,6 +149,42 @@ def render_index(alert_type=msg.SIGNIN_ALERT_TYPE_INFO,
         alert_type=alert_type,
         info=info
         )
+
+
+def get_request_url_for_avatar(avatar_url):
+    '''Get request url for avatar with avatar url.
+    param: avatar_url: it can be the avatar_url field in db
+                       or the default avatar url.
+    '''
+    return os.path.join(os.environ['REQUEST_ROOT'],
+                        config.avatar_dir_name,
+                        avatar_url
+                        )
+
+
+def get_default_avatar_request_url():
+    '''Get request url for default avatar.'''
+    return get_request_url_for_avatar(config.default_avatar_file_name)
+
+
+def assemble_avatar_dir():
+    '''Assemble the avatar dir in filesystem
+
+    Assume that config.avatar_dir_name = 'avatar',
+    config.parent_dir_for_avatar_dir = '/tmp'
+    then return /tmp/avatar
+
+    Assume that config.avatar_dir_name = 'avatar',
+    config.parent_dir_for_avatar_dir = None
+    os.environ['DOCUMENT_ROOT'] = '/tmp'
+    then return /tmp/avatar
+    '''
+    if config.parent_dir_for_avatar_dir:
+        parent_dir = config.parent_dir_for_avatar_dir
+    else:
+        parent_dir = os.environ['DOCUMENT_ROOT']
+    return os.path.join(parent_dir,
+                        config.avatar_dir_name)
 
 
 if __name__ == '__main__':
