@@ -108,6 +108,19 @@ def pbkdf2_hmac(hash_func, password, salt, iterations, dklen=None):
 
 def send_mail(smtp_server, sender, sender_pw,
               receiver, subject, mail_info, debug=False):
+    '''
+    >>> from application.utility import confirm_url_serializer
+    >>> serializer = confirm_url_serializer.ConfirmURLSerializer()
+    >>> email = 'huangkq@foxmail.com'
+    >>> token = serializer.dumps(email, salt=config.salt_for_confirm_link)
+    >>> email_info = config.email_info.format(
+    ...     host='12',
+    ...     request_root='122',
+    ...     token=token)
+    >>> send_mail(config.smtp_server, config.admin_email,
+    ...     config.admin_email_passwd, email,
+    ...     config.email_subject, email_info, debug=True)
+    '''
     msg = MIMEText(mail_info, 'html', 'utf-8')
     msg['From'] = sender
     msg['To'] = receiver
