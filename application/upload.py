@@ -86,8 +86,14 @@ class Upload(object):
                 raise OSError(errmsg)
 
     def _save_file(self):
-        read_size = 0
+        # Previous avatar maybe has a another extension. Remove it.
+        os.chdir(self._full_storage_dir)
+        for f in os.listdir("."):
+            if f.startswith(self._safe_file_name[:4]):
+                os.remove(f)
+
         with open(self._full_avatar_file_name, 'wb+') as fp:
+            read_size = 0
             while True:
                 chunk = self._fileitem.file.read(Upload.CHUNK_SIZE)
                 if not chunk:
@@ -97,6 +103,7 @@ class Upload(object):
                     raise FileTooBigError()
                 else:
                     fp.write(chunk)
+        os.chmod(self._full_avatar_file_name, 0660)
 
     def _assemble_avatar_url_in_db(self):
         return os.path.sep.join([self._sub_storage_dir,
