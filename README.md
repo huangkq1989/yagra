@@ -2,18 +2,17 @@ DEMO
 =======
 管理Avatar:
 http://58.248.25.237:9090/  
-账号： yagra_admin  
+测试账号： yagra_admin  
 密码： yagra123A  
 
 外站访问:  
 http://58.248.25.237:9090/yagra/app.py/avatar/eda31c99d48062be48529a5cbf2fd654  
 其中`eda31c99d48062be48529a5cbf2fd654`是注册邮箱的md5值  
-md5值用hashlib.md5('yagra_admin@163.com').hexdigest()得到。  
+这里的md5值用hashlib.md5('yagra_admin@163.com').hexdigest()得到。  
 
 
 设计说明
 =======
----
 
 
 ###基本设计###
@@ -30,11 +29,11 @@ md5值用hashlib.md5('yagra_admin@163.com').hexdigest()得到。
 2. 如何保存会话，是存储到数据库中还是用文件来进行存储，或自实现一个基于内存的会话管理器   
 	> 出于方便，本系统直接用标准库中的shelve来维护，保存到文件中。管理session时，
       除了在用户正常退出时销毁会话外，还有独立的回收session进程，将已过期的
-      session删除，保证断网等情况用户未能发送signout请求的情况下也能注销会话。   
+      session删除，保证在断网等异常情况下用户未能发送signout请求也能注销会话。   
 
 3. 如何实现通过邮件发送的确认注册链接，伪代码如下：  
     > `sep = "."`    
-      `hash = sha256(sep.join([base64_encode(email), base64_encode(time))])`   
+      `hash = sha256(sep.join([base64_encode(email), base64_encode(time)]))`   
       `sign = hash.update(salt).digest()`得到一个签名，   
       然后将`sep.join([base64(email), base64_encode(time),base64_encode(sign)])`     
       得到一个字符串，用户确认时根据该字符串反解，看是否合法和未超时。
@@ -44,7 +43,8 @@ md5值用hashlib.md5('yagra_admin@163.com').hexdigest()得到。
     > 密码的存储与比较的安全问题参考[Salted Password Hashing]。  
 
     > 同时为防止在线暴力猜测密码，使用频率来控制错误账号密码登录，每一个M分钟内
-      只能试N次，若完全用完则需要等待K分钟，其中M、N、K可配置。  
+      只能试N次，若完全用完则需要等待K分钟，其中M、N、K可配置。具体实现在
+      `application/backend/signin.py`的`check_frequency`函数中。   
 
 5. **HTTP的cache特性**：  
     > 在用户重新上传avatar时，原来的avatar可能被浏览器所缓存，导致新上传的avatar
@@ -69,7 +69,8 @@ md5值用hashlib.md5('yagra_admin@163.com').hexdigest()得到。
     > 支持调试和非调试两种模式，在调试模式下启动cgitb(cgitb.enable())，
 	  错误数据通过sys.stderr写入apache日记后reraise异常，然后由cgitb显示；   
 
-    > 非调试模式下，写入sys.stderr，向用户返回用户友好的提示。  
+    > 非调试模式下，错误数据通过sys.stderr写入apache日记，然后向用户返回
+      用户友好的提示。  
 	
 7. 对移动终端的兼容性： 
     > 前端是基于Bootstrap框架实现的，这一响应式的CSS框架能很好的
@@ -97,7 +98,7 @@ md5值用hashlib.md5('yagra_admin@163.com').hexdigest()得到。
 
     > 由`framework/render_template.py`和`framework/jsonify.py`负责render，
       实现了包括`redirect`，`render_template`，`jsonify`等方法。考虑到`DRY`，
-      `render_template`支持模板继承和变量功能，通过正则表达式来实现。  
+      `render_template`支持*模板继承和变量功能*，通过正则表达式来实现。  
       支持以下语法：
 
         # extends template
@@ -118,7 +119,7 @@ md5值用hashlib.md5('yagra_admin@163.com').hexdigest()得到。
 
 共存在两个表，分别为`users`和`access_control`。  
 
-#####users#####
+#####users表#####
 
 用户信息表，使用MyISAM引擎，原因是该表更新并不频繁，主要是读操作，无需支持事务，而
 MyISAM有二进制可移植等优点，易于维护。
@@ -138,10 +139,12 @@ MyISAM有二进制可移植等优点，易于维护。
     +-------------+------------------+------+-----+---------+----------------+
 说明：  
 	1. email的长度：根据RFC5321， forward path最多为256，去除\r\n，则最多为254，这里取255；    
-	2. 由于password、salt、avatar_url都是定长的，所以数据类型为char(32);   
+	2. 由于password、salt、avatar_key都是定长的，所以数据类型为char(32);   
 	3. avatar_key是用户邮箱的MD5值，通过该值在其他网站引用用户的avatar;   
 	4. confirmed用于记录用户是否已经确认邮箱，以反馈正确的信息给用户。  
-	5. register_on记录用户注册的时间，若在超过指定时间后用户还未通过邮箱确认账号，
+    5. 尽管图片的url可以由id反解出来，但这里还是添加了avatar_url这个字段，主要的考虑是
+        即使以后更改生成存储图片路径的算法，旧的图片依然可简单地通过avatar_url来访问。
+	6. register_on记录用户注册的时间，若在超过指定时间后用户还未通过邮箱确认账号，
 	   则会通过MySQL 的Event功能将该信息删除；启用和创建Event的语句如下：  
 
     -- enable event.
@@ -155,9 +158,9 @@ MyISAM有二进制可移植等优点，易于维护。
         DELETE FROM yagra.users WHERE users.confirmed=0 and TIMESTAMPDIFF(SECOND, yagra.users.register_on, NOW()) > 3600;  
        
 
-#####access_control#####
+#####access_control表#####
 
-错误账号密码登录的频率控制，使用InnoDB引擎，原因是需要事务来保证并发不出错。  
+错误账号密码登录的频率控制，使用InnoDB引擎，原因是频率控制需要事务来保证并发不出错。  
 
     +-----------+--------------+------+-----+---------+----------------+
     | Field     | Type         | Null | Key | Default | Extra          |
@@ -170,15 +173,16 @@ MyISAM有二进制可移植等优点，易于维护。
 
 说明：  
 	1. access_control用于控制错误账号密码登录的，为了表现出已存在的用户和未存在的用户名
-        都有同样的表现(避免非法用户猜测用户名)，将access_control独立为一个表，不存在的用户
-        也和存在的用户同样地处理。  
+        都有同样的表现*(避免非法用户猜测用户名)*，将access_control独立为一个表，不存在的用户
+        也和存在的用户同样地处理。用户（不论是不是合法用户）第一次不合法登录时（账号或
+        密码错误）往该表插入一条数据，作为后续登录的检查依据。   
 	2. last_time是用户上一次的访问时间，allowance是用户还有多少尝试机会的次数。  
     3. 这个表可以定期truncate一下，清理一下存储空间。  
 	
 
 ####索引设计####
 	
-#####users#####
+#####users表#####
 
 通过username、avatar_key、id查询次数较多，因此对其建立索引。id字段为主键，进行自增。  
 
@@ -190,7 +194,7 @@ MyISAM有二进制可移植等优点，易于维护。
     | users |          0 | avatar_key |            1 | avatar_key  | A         |        NULL |     NULL | NULL   | YES  | BTREE      |
     +-------+------------+------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+
 
-#####access_control#####
+#####access_control表#####
 
 频率控制根据登录名进行，因此对username建立索引。id字段为主键，进行自增。 
 
@@ -231,7 +235,8 @@ MyISAM有二进制可移植等优点，易于维护。
 
 ###TODO###
 
-为防止机器自动注册，可以考虑添加验证码功能，不过不能用第三方库，所以本系统目前不实现。  
+为防止机器自动注册，可以考虑添加验证码功能，不过由于不能用第三方库，
+所以本系统目前不实现。  
 
 
 安装说明
