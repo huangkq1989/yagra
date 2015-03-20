@@ -20,7 +20,7 @@ class SessionGC(object):
     """
 
     def __init__(self, session_dir):
-        self._run_interval_seconds = 60
+        self._run_interval_seconds = 6
         self._session_dir = session_dir
 
     def do_gc(self):
@@ -31,7 +31,7 @@ class SessionGC(object):
                 expire_time = data['cookie']['expires']
                 if expire_time < time.time():
                     os.remove(file)
-                    logging.debug("session(%s) was deleted", file)
+                    logging.info("session(%s) was deleted", file)
             except KeyError:
                 pass
 
@@ -48,7 +48,7 @@ class SessionGC(object):
 
 def init_logging(log_path):
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
         datefmt='%m-%d %H:%M',
         filename=log_path,
