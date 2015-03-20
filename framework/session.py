@@ -50,7 +50,8 @@ class Session(object):
         os.chmod(self._session_file_name, 0660)
         # Initializes the expires data
         if not self.data.get('cookie'):
-            self.data['cookie'] = {'expires': ''}
+            expired_at = time.time() + config.session_expires_interval
+            self.data['cookie'] = {'expires': expired_at}
 
     def close(self):
         self.data.close()
