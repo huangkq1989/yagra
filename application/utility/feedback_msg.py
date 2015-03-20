@@ -32,7 +32,7 @@ SIGNIN_TRY_IT_LATER = "please try it after %s minutes"
 
 
 CONFIRM_URL_CONFIRMED = 'This has been confirmed.'
-CONFIRM_URL_FAKE = 'Ivalid confirm url.'
+CONFIRM_URL_FAKE = 'Invalid confirm url.'
 CONFIRM_URL_TIMEOUT = "This confirm url has been expired."
 
 
