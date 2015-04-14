@@ -10,7 +10,7 @@ var error_handler = function (xhr, textStatus, errorThrown) {
     if(xhr.responseText != null && xhr.responseText != "") {
         var data = xhr.responseText;
         try {
-            alert(data);
+            //alert(data);
             alert(JSON.parse(data)["descript"]);
         } catch(e) {
             alert("(" + textStatus + ") " + errorThrown);
