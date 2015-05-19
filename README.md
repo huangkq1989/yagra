@@ -1,14 +1,7 @@
-DEMO
+说明
 =======
-管理Avatar:
-http://58.248.25.237:9090/  
-测试账号： yagra_admin  
-密码： yagra123A  
-
-外站访问:  
-http://58.248.25.237:9090/yagra/app.py/avatar/eda31c99d48062be48529a5cbf2fd654  
-其中`eda31c99d48062be48529a5cbf2fd654`是注册邮箱的md5值  
-这里的md5值用hashlib.md5('yagra_admin@163.com').hexdigest()得到。  
+这是一个作业，使用CGI协议实现一个类Gravatar网站。在CGI协议的基础上封装了一个简单的Web框架，
+主要是对Web框架、CGI协议、HTTP协议、数据库、Web安全等技术的实践。  
 
 
 设计说明
